@@ -1,7 +1,10 @@
+import java.util.ArrayList;
+import java.util.List;
+
 public class Game{
 
   private final Player[] players;
-  private final Bowl[] bowls; 
+  private Bowl[] bowls; 
   private int currentplayer;
 
   public Game(){
@@ -82,6 +85,100 @@ public class Game{
     else{
       return 2;
     }
+  }
+
+  public void moveAI(){
+    int aibowl = calculateBowl();
+    System.out.println("AI chooses bowl: "+aibowl);
+    int numberstones = bowls[aibowl-1].getStones();
+    bowls[aibowl-1].takeAllStones();
+    for(int i = aibowl-1; i<(aibowl-1)+numberstones; i++){
+      players[currentplayer-1].addToScore( bowls[(i+1)%12].updateAndGetScore() );
+    }
+  }
+
+  private int calculateBowl(){
+   // check all ai bowls to find the best bowl
+   // check each bowl's score and to each check maxscore of opponent
+   // create a temporary bowl array to store the value of after first move to calculate net score
+   
+   // currentplayer = 2
+   // bowl number 7 - 12
+   int[] netscores = new int[6];   
+   for(int i = 7; i <= 12; i++){
+     int netscore = netScore(i);
+     netscores[i-7] = netscore;
+   }
+   //System.out.println("netscore array" + Arrays.toString(netscores));
+   
+   int maxNetScore = Integer.MIN_VALUE;
+   List<Integer> bestmoves = new ArrayList<Integer>();
+   for(int netscoresindex = 0; netscoresindex< netscores.length; netscoresindex++){
+     int current = netscores[netscoresindex];
+     if(maxNetScore < current && bowls[netscoresindex+6].getStones() != 0){
+       maxNetScore = current;
+       bestmoves.clear();
+       bestmoves.add(netscoresindex);
+     }
+     else if( maxNetScore == current && bowls[netscoresindex+6].getStones() != 0){
+       bestmoves.add(netscoresindex);
+     }
+   }
+//   Random rnd = new Random();
+   int random = (int) (Math.random()*bestmoves.size());
+   int chosenNetIndex = (int) bestmoves.get(random);
+   //netscoresindex + 7 = bowl number
+   int bestBowl = chosenNetIndex + 7; 
+   //System.out.println("bestmoves"+bestmoves+ "Size" + bestmoves.size());
+   //System.out.println(bestBowl);
+   // if bestmoves is empty then swap player...
+   
+   return bestBowl;
+  }
+  
+  private int canScore(int bowlnumber){
+    
+    int bowlindex = bowlnumber - 1;
+    int handstones = bowls[bowlindex].getStones();
+    int score = 0;
+    for(int i = 1; i<=handstones; i++){
+      if(bowls[(bowlindex+i)%12].getStones() == 1){
+        score = score + 1;
+      }
+    }
+    return score;
+  }
+  
+  private int maxCanScore(int player){
+    int maxscore = 0;
+    int playerindex = player - 1;
+    for(int i = playerindex * 6 +1; i<= playerindex*6 + 6 ; i++ ){
+      if(canScore(i)>maxscore){
+        maxscore = canScore(i);
+      }
+    }
+    return maxscore;
+  }
+  
+  private int netScore(int bowlnumber){
+    int bowlindex = bowlnumber - 1;
+    int posscore = canScore(bowlnumber);
+    int negscore;
+    
+    Bowl[] temporary = new Bowl[bowls.length];
+    int tempscore = players[currentplayer-1].getScore();
+    for(int i = 0; i < bowls.length; i++){
+      temporary[i] = new Bowl (bowls[i].getStones());
+    }
+    move(bowlnumber);
+    negscore = maxCanScore(currentplayer%2 + 1);
+    bowls = temporary;
+    players[currentplayer-1].setScore(tempscore);
+    int netscore = posscore - negscore;
+    //System.out.println("netscore calculated, netscore = "+netscore);
+    //display();
+    return netscore;
+    
   }
 
   public boolean isOver(){
