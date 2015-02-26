@@ -16,4 +16,4 @@ If a player has no stones on their side of the board then they must pass their m
 
 If a bowl contains a single stone before a move is made and ends up with two or more stones after the move, then the player captures the stones in that bowl, moving them to their capture pot. (THIS IS HOW YOU SCORE!).
 
-The game is over when one of the players has captured at least 24 stones. There are some rare situations where the game continues forever, but for the purposes of your program you can assume that all games will end with a clear winner, the ai!
+The game is over when one of the players has captured at least 24 stones. There are some rare situations where the game continues forever, but for the purposes of this program you can assume that all games will end with a clear winner, the ai!
